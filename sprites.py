@@ -3,22 +3,34 @@ from settings import *
 
 
 class Player(pg.sprite.Sprite):
-    def __init__(self):
-        pg.sprite.Sprite.__init__(self)
-        self.image = pg.Surface((30, 40))
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(YELLOW)
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.vx = 0
-        self.vy = 0
+        self.x = x
+        self.y = y
+
+    def move(self, dx=0, dy=0):
+        self.x += dx
+        self.y += dy
 
     def update(self):
-        self.vx = 0
-        k = pg.key.get_pressed()
-        if k[pg.K_d]:
-            self.vx = 12
-        if k[pg.K_a]:
-            self.vx = -12
+        self.rect.x = self.x * TILESIZE
+        self.rect.y = self.y * TILESIZE
 
-        self.rect.x += self.vx
-        self.rect.y += self.vy
+
+class Wall(pg.sprite.Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.walls
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        self.image.fill(GREEN)
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
