@@ -1,5 +1,6 @@
 import pygame as pg
 from settings import *
+from math import *
 
 
 class Player(pg.sprite.Sprite):
@@ -10,16 +11,53 @@ class Player(pg.sprite.Sprite):
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(YELLOW)
         self.rect = self.image.get_rect()
-        self.x = x
-        self.y = y
+        self.vx, self.vy = 0, 0
+        self.x = x * TILESIZE
+        self.y = y * TILESIZE
 
-    def move(self, dx=0, dy=0):
-        self.x += dx
-        self.y += dy
+    def getKeys(self):
+        self.vx, self.vy = 0, 0
+        k = pg.key.get_pressed()
+        if k[pg.K_a]:
+            self.vx = -PLAYER_SPEED
+        if k[pg.K_d]:
+            self.vx = PLAYER_SPEED
+        if k[pg.K_w]:
+            self.vy = -PLAYER_SPEED
+        if k[pg.K_s]:
+            self.vy = PLAYER_SPEED
+        if self.vx != 0 and self.vy != 0:
+            self.vx *= sin(45)
+            self.vy *= sin(45)
+
+    def collideWithWalls(self, dir):
+        if dir == 'x':
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            if hits:
+                if self.vx > 0:
+                    self.x = hits[0].rect.left - self.rect.width
+                if self.vx < 0:
+                    self.x = hits[0].rect.right
+                self.vx = 0
+                self.rect.x = self.x
+        if dir == 'y':
+            hits = pg.sprite.spritecollide(self, self.game.walls, False)
+            if hits:
+                if self.vy > 0:
+                    self.y = hits[0].rect.top - self.rect.height
+                if self.vy < 0:
+                    self.y = hits[0].rect.bottom
+                self.vy = 0
+                self.rect.y = self.y
 
     def update(self):
-        self.rect.x = self.x * TILESIZE
-        self.rect.y = self.y * TILESIZE
+        self.getKeys()
+        self.x += self.vx * self.game.dt
+        self.y += self.vy * self.game.dt
+        self.rect.x = self.x
+        self.collideWithWalls('x')
+        self.rect.y = self.y
+        self.collideWithWalls('y')
 
 
 class Wall(pg.sprite.Sprite):
